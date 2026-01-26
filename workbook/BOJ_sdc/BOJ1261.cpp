@@ -1,57 +1,68 @@
 #include <bits/stdc++.h>
 using namespace std;
+int n, m;
+const int INF = 1e9;
 
-int n, m, x;
-vector<vector<pair<int, int> > > graph;
-vector<int> dist;
+int dy[] = {-1, 1, 0, 0};
+int dx[] = {0, 0, -1, 1};
 
-int dijkstra(int, int);
+struct cell {
+    int d;
+    int y;
+    int x;
+
+    bool operator>(const cell &c) const {
+        return d > c.d;
+    }
+};
+
+
+vector<vector<int> > grid;
+vector<vector<int> > dist;
+
+void dijkstra();
 
 int main() {
     ios::sync_with_stdio(0);
     cin.tie(0);
-    cin >> n >> m >> x;
-    graph.resize(n + 1);
-
-    for (int j = 1; j <= m; j++) {
-        int v, u, w;
-        cin >> v >> u >> w;
-        graph[v].push_back({w, u});
+    cin >> m >> n;
+    grid.assign(n + 1, vector<int>(m + 1, -1));
+    dist.assign(n + 1, vector<int>(m + 1, INF));
+    for (int i = 1; i <= n; i++) {
+        string s;
+        cin >> s;
+        for (int j = 1; j <= m; j++) {
+            grid[i][j] = s[j - 1] - '0';
+        }
     }
 
-    int maxD = 0;
-    for (int i = 1; i <= n; ++i) {
-        int temp = dijkstra(i, x) + dijkstra(x, i);
+    dijkstra();
 
-        maxD = max(maxD, temp);
-    }
-    cout << maxD << '\n';
+    cout << dist[n][m] << endl;
+
     return 0;
 }
 
-int dijkstra(int startV, int endV) {
-    priority_queue<pair<int, int>, vector<pair<int, int> >, greater<pair<int, int> > > pq;
-    dist.assign(n + 1, INT_MAX);
-    dist[startV] = 0;
-    pq.push({0, startV});
+void dijkstra() {
+    priority_queue<cell, vector<cell>, greater<cell> > pq;
+    pq.push({0, 1, 1});
+    dist[1][1] = 0;
     while (!pq.empty()) {
-        int cur = pq.top().second;
-        int curdist = pq.top().first;
+        cell cur = pq.top();
         pq.pop();
-
-        if (dist[cur] < curdist) {
+        if (dist[cur.y][cur.x] < cur.d) {
             continue;
         }
-        for (auto &nxt: graph[cur]) {
-            int weight = nxt.first;
-            int nxt_node = nxt.second;
-
-            if (dist[nxt_node] > dist[cur] + weight) {
-                dist[nxt_node] = dist[cur] + weight;
-                pq.push({dist[nxt_node], nxt_node});
+        for (int dir = 0; dir < 4; dir++) {
+            int nx = cur.x + dx[dir];
+            int ny = cur.y + dy[dir];
+            if (ny > 0 && ny <= n && nx > 0 && nx <= m) {
+                if (dist[ny][nx] > dist[cur.y][cur.x] + grid[ny][nx]) {
+                    dist[ny][nx] = dist[cur.y][cur.x] + grid[ny][nx];
+                    pq.push(cell({dist[ny][nx], ny, nx}));
+                }
             }
         }
     }
-    return dist[endV];
 }
 
