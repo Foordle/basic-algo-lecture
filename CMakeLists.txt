@@ -1,13 +1,8 @@
-cmake_minimum_required(VERSION 3.20) # 본인의 CLion 버전이나 환경에 맞게 조절 가능
+cmake_minimum_required(VERSION 3.20)
 project(coding_test)
 
-# C++ 표준 설정 (최신 문법을 위해 17 또는 20 추천)
 set(CMAKE_CXX_STANDARD 17)
 
-# ==========================================
-# 여기에 실행하고 싶은 파일 이름만 적으세요!
-# ==========================================
-set(TARGET_FILE "0x09_BFS/boj1926.cpp")
-
-# 타겟 이름을 "OUT"으로 고정하여 생성
-add_executable(OUT workbook/BOJ1238.cpp)
+# 아래 줄을 플러그인이 찾아서 파일 경로만 계속 갈아끼울 것입니다.
+# 만약 에러가 나면 이 아래에 중복된 줄이 생겼는지 확인하고 지워주면 됩니다.
+add_executable(Out workbook/BOJ_sdc/BOJ1916.cpp)
