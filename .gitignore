@@ -1,0 +1,22 @@
+# IDE 설정 파일 (이번 에러의 원인)
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# 컴파일 결과물 및 빌드 폴더
+cmake-build-debug/
+cmake-build-release/
+out/
+bin/
+*.exe
+*.o
+*.obj
+
+# 운영체제 생성 파일
+.DS_Store
+Thumbs.db
+
+# 기타 로그 및 캐시
+*.log
+.vscode/
