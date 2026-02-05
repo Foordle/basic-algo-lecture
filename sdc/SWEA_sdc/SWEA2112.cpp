@@ -10,7 +10,6 @@ int grid[14][21];
 bool checkPerformance() {
     if (k == 1) return true;
     for (int j = 0; j < w; ++j) {
-        int max_cnt = 1;
         int cur_cnt = 1;
         for (int i = 0; i < d - 1; ++i) {
             if (grid[i][j] == grid[i + 1][j]) cur_cnt++;
