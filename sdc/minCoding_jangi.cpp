@@ -56,7 +56,7 @@ void solve(int level, int y, int x) {
                     // 복구
                     grid[ny][nx] = temp;
 
-                    // 이 다음꺼는 안봅니다!
+
                     break;
                 }
 
