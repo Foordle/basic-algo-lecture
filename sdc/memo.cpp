@@ -1,49 +1,52 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int n, k;
 
-struct Jewel {
-    int weight;
-    int price;
+int n, m;
+int bitMask = 0;
+vector<pair<string, int>> guitars;
 
-    bool operator<(const Jewel& jewel) const {
-        if (price != jewel.price) return price < jewel.price;
-        else return weight > jewel.weight;
+void playGuitar(int level, int bitMask) {
+    if (level == n) {
+        return;
     }
-};
-multiset<Jewel> jewels;
-multiset<int> bags;
+    if (bitMask == (1<<n)-1) {
+
+    }
+    int temp  = bitMask;
+    // 선택함
+    bitMask |=  (1<<level);
+    playGuitar(level+1, bitMask);
+
+
+    bitMask = temp;
+    // 선택 안함
+    playGuitar(level+1, bitMask);
+}
+
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-    cin >> n >> k;
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    cin >> n >> m;
+    guitars.resize(n);
     for (int i = 0; i < n; ++i) {
-        Jewel temp;
-        cin >> temp.weight >> temp.price;
-        jewels.insert(temp);
+        string gName;
+        cin >> gName;
 
-    }
-    for (int i = 0; i < k; ++i) {
-        int c;
-        cin >> c;
-        bags.insert(c);
-    }
-
-    long long sum = 0;
-
-    for (auto jewelsIt = jewels.rbegin(); jewelsIt != jewels.rend(); ++jewelsIt) {
-        if (bags.empty()) break;
-        auto bagIt = bags.lower_bound(jewelsIt -> weight);
-
-        if (bagIt != bags.end()) {
-            sum += jewelsIt -> price;
-            bags.erase(bagIt);
+        int code = 0;
+        string str;
+        cin >> str;
+        for (int j = 0; j < m; ++j) {
+            if (str[j] == 'Y') {
+                code |= (1<<i);
+            }
         }
 
+        guitars[i] = {gName, code};
     }
 
-    cout<< sum << '\n';
+
 
     return 0;
 }
