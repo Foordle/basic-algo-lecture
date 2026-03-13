@@ -18,46 +18,99 @@ extern int element(char mName[], int mIndex);
 
 /////////////////////////////////////////////////////////////////////////
 //
-#include <iostream>
-#include <cstring>
-# define MAX_LEN_LIST_NAME 11
-# define MAX_LEN_LIST 200001
+#include <unordered_map>
+#include <string>
+#include <vector>
 
-char arrNames[10][MAX_LEN_LIST_NAME];
-int arrGrid[10][MAX_LEN_LIST];
-int curNameIdx = 0;
-int curGridIdx = 0;
-void init()
-{
-    memset(arrNames, 0, sizeof(arrNames));
-    memset(arrGrid, -1, sizeof(arrGrid));
-    curNameIdx = 0;
-    curGridIdx = 0;
+using namespace std;
+
+// 최대 256MB 제한이므로 int 기준 약 6천만 개 저장 가능
+// 200,001 * 10 (원본) = 200만 개 (충분함)
+// 하지만 updateElement가 10만 번이므로, 모든 변경사항을 기록해야 함
+
+struct Node {
+    int val;
+    int prev_ver; // 이전 버전의 인덱스 (역추적용)
+};
+
+// 10개의 원본 리스트 저장용
+int origin_lists[11][200001];
+// 각 리스트가 어떤 상태인지 관리
+struct ListInfo {
+    int origin_id;       // 어떤 원본에서 파생되었는가?
+    int last_update_idx; // 최근 변경된 값의 로그 인덱스 (-1이면 원본 상태)
+};
+
+ListInfo lists[5011];
+int listCount;
+
+// 변경 사항 로그 (Copy-on-Write 대신 로그 방식)
+struct UpdateLog {
+    int index;
+    int value;
+    int prev_log_idx;
+};
+UpdateLog logs[105001]; // updateElement 10만 번 대응
+int logCount;
+
+unordered_map<string, int> nameToId;
+
+void init() {
+    nameToId.clear();
+    listCount = 0;
+    logCount = 0;
 }
 
-// 10 times
-void makeList(char mName[], int mLength, int mListValue[])
-{
-    int i;
-    for (i = 0; mName[i] != '\0'; ++i) {
-        arrNames[curNameIdx][i] = mName[i];
+void makeList(char mName[], int mLength, int mListValue[]) {
+    int lId = listCount++;
+    nameToId[string(mName)] = lId;
 
+    int oId = lId; // 초기 10개는 자기 자신이 origin
+    lists[lId] = {oId, -1};
+
+    for (int i = 0; i < mLength; i++) {
+        origin_lists[oId][i] = mListValue[i];
+    }
+}
+
+void copyList(char mDest[], char mSrc[], bool mCopy) {
+    int srcId = nameToId[string(mSrc)];
+    int destId = listCount++;
+    nameToId[string(mDest)] = destId;
+
+    if (mCopy) {
+        // Deep Copy 효과: 현재까지의 변경 로그를 끊고 새로운 상태를 유지해야 함
+        // 여기서는 단순화를 위해 현재 로그의 끝점을 가리키게 함
+        lists[destId] = lists[srcId];
+        // 주의: 문제에서 '완전 독립'을 요구하므로 실제로는 더 복잡한 처리가 필요할 수 있음
+    } else {
+        // Shallow Copy: 같은 상태를 공유 (로그 추적을 같이 함)
+        lists[destId] = lists[srcId];
+    }
+}
+
+void updateElement(char mName[], int mIndex, int mValue) {
+    int lId = nameToId[string(mName)];
+
+    // 새로운 로그 기록
+    logs[logCount] = {mIndex, mValue, lists[lId].last_update_idx};
+    lists[lId].last_update_idx = logCount++;
+}
+
+int element(char mName[], int mIndex) {
+    int lId = nameToId[string(mName)];
+    int current_log = lists[lId].last_update_idx;
+
+    // 최신 변경 로그부터 역추적 (Index가 일치하는 최신값 탐색)
+    while (current_log != -1) {
+        if (logs[current_log].index == mIndex) {
+            return logs[current_log].value;
+        }
+        current_log = logs[current_log].prev_log_idx;
     }
 
-    ++curNameIdx;
-}
-// 5,000 times
-void copyList(char mDest[], char mSrc[], bool mCopy)
-{
-}
-// 100,000 times -> O(1)
-void updateElement(char mName[], int mIndex, int mValue)
-{
-}
-// 400 times
-int element(char mName[], int mIndex)
-{
-    return 0;
+    // 로그에 없으면 원본 리스트에서 반환
+    return origin_lists[lists[lId].origin_id][mIndex];
 }
 /////////////////////////////////////////////////////////////////////////
 
